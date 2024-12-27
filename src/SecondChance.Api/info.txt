@@ -1,0 +1,5 @@
+Migrations
+
+dotnet ef migrations add MigrationName --project PathToDataAccessProject --startup-project PathToApiProject
+
+dotnet ef migrations add MigrationName --project SecondChance.Infrastructure --output-dir Persistence/Migrations -- --environment=Development

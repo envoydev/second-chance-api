@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecondChance.Api", "src\SecondChance.Api\SecondChance.Api.csproj", "{6A47334C-7F64-40F2-9F89-575B15BE382D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecondChance.Domain", "src\SecondChance.Domain\SecondChance.Domain.csproj", "{FD42D709-61D7-4346-962C-6DB411E96012}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecondChance.Application", "src\SecondChance.Application\SecondChance.Application.csproj", "{01528F18-266B-451B-B08D-6DA37EB93832}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecondChance.Infrastructure", "src\SecondChance.Infrastructure\SecondChance.Infrastructure.csproj", "{533928FB-0C16-4D6D-8766-058DD480F3E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A47334C-7F64-40F2-9F89-575B15BE382D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A47334C-7F64-40F2-9F89-575B15BE382D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A47334C-7F64-40F2-9F89-575B15BE382D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A47334C-7F64-40F2-9F89-575B15BE382D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD42D709-61D7-4346-962C-6DB411E96012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD42D709-61D7-4346-962C-6DB411E96012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD42D709-61D7-4346-962C-6DB411E96012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD42D709-61D7-4346-962C-6DB411E96012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01528F18-266B-451B-B08D-6DA37EB93832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01528F18-266B-451B-B08D-6DA37EB93832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01528F18-266B-451B-B08D-6DA37EB93832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01528F18-266B-451B-B08D-6DA37EB93832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{533928FB-0C16-4D6D-8766-058DD480F3E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{533928FB-0C16-4D6D-8766-058DD480F3E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{533928FB-0C16-4D6D-8766-058DD480F3E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{533928FB-0C16-4D6D-8766-058DD480F3E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
