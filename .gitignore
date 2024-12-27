@@ -400,6 +400,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom excludes
-./src/SecondChance.Api/Root/Database/
-./src/SecondChance.Api/Root/Errors/
-./src/SecondChance.Api/Root/Secrets/
+./src/SecondChance.Api/Root/Database/*
+./src/SecondChance.Api/Root/Errors/*
+./src/SecondChance.Api/Root/Secrets/*

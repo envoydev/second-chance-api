@@ -18,7 +18,7 @@ public class DateRangeFilterValidator : AbstractValidator<IDateRangeFilter>
         RuleFor(v => v.To)
             .NotEmpty()
             .WithErrorCode(ErrorMessageCodes.ValidationInvalidValue)
-            .MustAsync(CheckIsToLowerThenFromAsync)
+            .MustAsync(CheckIsToHigherThenFromAsync)
             .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
             .When(x => x.To.HasValue);
     }
@@ -28,7 +28,7 @@ public class DateRangeFilterValidator : AbstractValidator<IDateRangeFilter>
         return !dateRangeFilter.To.HasValue ? Task.FromResult(true) : Task.FromResult(dateRangeFilter.To >= from);
     }
     
-    private static Task<bool> CheckIsToLowerThenFromAsync(IDateRangeFilter dateRangeFilter, DateTime? to, CancellationToken cancellationToken)
+    private static Task<bool> CheckIsToHigherThenFromAsync(IDateRangeFilter dateRangeFilter, DateTime? to, CancellationToken cancellationToken)
     {
         return !dateRangeFilter.From.HasValue ? Task.FromResult(true) : Task.FromResult(dateRangeFilter.From <= to);
     }
