@@ -3,13 +3,13 @@ using SecondChance.Domain.Enums;
 namespace SecondChance.Application.Security;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class AuthorizeAttribute : Attribute
+public class AuthorizationAttribute : Attribute
 {
-    private AuthorizeAttribute()
+    private AuthorizationAttribute()
     {
     }
 
-    public AuthorizeAttribute(Role[] role) : this()
+    public AuthorizationAttribute(Role[] role) : this()
     {
         Roles = role;
     }

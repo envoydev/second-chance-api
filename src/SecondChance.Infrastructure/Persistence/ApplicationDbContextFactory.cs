@@ -12,41 +12,62 @@ internal class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applica
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var rootPath = args.Length != 0 ? args[0] : string.Empty;
-        Console.WriteLine($"Root path from args: {rootPath}");
-        Guard.Against.NullOrWhiteSpace(rootPath, message: "Root path is invalid.");
-        
-        var environmentRuntime = EnvironmentObject.GetCurrentEnvironmentRuntime();
+        var rootPath = GetArgumentValue(args, "--path=", Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()));
+        Console.WriteLine($"Root path: {rootPath}");
+
+        var environmentRuntime = GetEnumArgumentValue<EnvironmentRuntime>(args, "--environment=", EnvironmentObject.GetEnvironmentValue());
         Console.WriteLine($"Environment runtime: {environmentRuntime}");
 
-        var jsonSettingsPath = Path.Combine(rootPath, $"appsettings.{environmentRuntime}.json");
-        Console.WriteLine($"App-Settings file path: {jsonSettingsPath}");
+        var configurationBuilder = new ConfigurationBuilder()
+            .AddJsonFile(
+                GetJsonFilePath(rootPath, $"appsettings.{environmentRuntime}.json"), 
+                optional: true, 
+                reloadOnChange: true);
 
-        var isJsonFileExist = File.Exists(jsonSettingsPath);
-        Guard.Against.Expression(result => result == false, isJsonFileExist, "Path to app-settings file does not exist.");
-
-        var configurationBuilder = new ConfigurationBuilder();
-        configurationBuilder.AddJsonFile(jsonSettingsPath, true, true);
-
-        var environmentSecrets = EnvironmentObject.GetSecretsEnvironmentValue();
-        Console.WriteLine($"Environment secrets: {environmentSecrets}");
-        
-        if (environmentSecrets == SecretsRuntime.UseSecrets)
+        if (GetEnumArgumentValue<SecretsRuntime>(args, "--secrets=", EnvironmentObject.GetSecretsValue()) == SecretsRuntime.UseSecrets)
         {
-            var secretsJsonPath = Path.Combine(rootPath, "Root", "Secrets", $"secrets.{environmentRuntime}.json");
-            Console.WriteLine($"Secrets file path: {secretsJsonPath}");
-            Guard.Against.NullOrWhiteSpace(secretsJsonPath, message: "Secrets file path is invalid.");
-            
-            configurationBuilder.AddJsonFile(secretsJsonPath, true, true);
+            configurationBuilder.AddJsonFile(
+                GetJsonFilePath(rootPath, "Root/Secrets", $"secrets.{environmentRuntime}.json"), 
+                optional: true, 
+                reloadOnChange: true);
         }
-        
+
         var connectionString = configurationBuilder.Build().GetDatabaseConnectionString();
-        Console.WriteLine($"Connection string: {connectionString}");
-        Guard.Against.NullOrWhiteSpace(connectionString, message: "Root project folder does not exist.");
+        Guard.Against.NullOrWhiteSpace(connectionString, "Connection string cannot be null or empty.");
 
-        var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        builder.SetDatabaseType(connectionString);
-
-        return new ApplicationDbContext(builder.Options);
+        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        optionsBuilder.SetDatabaseType(connectionString);
+        
+        return new ApplicationDbContext(optionsBuilder.Options);
     }
+
+    #region Private methods
+
+    private static TEnum GetEnumArgumentValue<TEnum>(string[] args, string prefix, string? defaultValue) where TEnum : struct
+    {
+        var value = GetArgumentValue(args, prefix, defaultValue);
+        return Enum.Parse<TEnum>(value);
+    }
+    
+    private static string GetArgumentValue(string[] args, string prefix, string? defaultValue)
+    {
+        var value = args.FirstOrDefault(x => x.StartsWith(prefix))?.Replace(prefix, string.Empty) ?? defaultValue;
+        Guard.Against.NullOrWhiteSpace(value, $"{prefix.Trim('=')} value is invalid.");
+        return value;
+    }
+
+    private static string GetJsonFilePath(string rootPath, string folder, string fileName)
+    {
+        var path = Path.Combine(rootPath, folder, fileName);
+        Console.WriteLine($"JSON file path: {path}");
+        Guard.Against.Expression(result => result, !File.Exists(path), $"File not found at path: {path}");
+        return path;
+    }
+
+    private static string GetJsonFilePath(string rootPath, string fileName)
+    {
+        return GetJsonFilePath(rootPath, string.Empty, fileName);
+    }
+
+    #endregion
 }

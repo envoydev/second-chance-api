@@ -16,7 +16,11 @@ public abstract class ErrorMessageCodes
     // Token-Specific Codes
     public const string TokenRequired = "TOKEN_REQUIRED";
     public const string TokenInvalid = "TOKEN_INVALID";
-    public const string TokenExpired = "TOKEN_EXPIRED";
+    public const string TokenNotYetValid = "TOKEN_NOT_YET_VALID";
+    public const string TokenHasExpired = "TOKEN_HAS_EXPIRED";
+    public const string TokenSignatureInvalid = "TOKEN_SIGNATURE_INVALID";
+    public const string TokenValidationFailed = "TOKEN_VALIDATION_FAILED";
+    public const string TokenUnexpectedError = "TOKEN_UNEXPECTED_ERROR";
 
     // Exception Handling Specific Codes
     public const string InternalServerError = "EXCEPTION_INTERNAL_SERVER";

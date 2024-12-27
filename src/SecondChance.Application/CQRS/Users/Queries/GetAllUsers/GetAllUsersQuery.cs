@@ -6,7 +6,7 @@ using SecondChance.Domain.Enums;
 
 namespace SecondChance.Application.CQRS.Users.Queries.GetAllUsers;
 
-[Authorize([Role.Admin])]
+[Authorization([Role.Admin])]
 public sealed record GetAllUsersQuery(
     int? Skip, 
     int? Take, 

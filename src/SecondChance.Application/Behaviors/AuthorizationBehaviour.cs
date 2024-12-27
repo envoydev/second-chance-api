@@ -22,7 +22,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var authorizeAttributes = request.GetType()
-                                         .GetCustomAttributes<AuthorizeAttribute>()
+                                         .GetCustomAttributes<AuthorizationAttribute>()
                                          .ToList()
                                          .AsReadOnly();
 
@@ -38,7 +38,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
 
         if (_sessionService.TokenExpiration < _dateTimeService.GetUtc())
         {
-            throw new UnauthorizedException(ErrorMessageCodes.TokenExpired);
+            throw new UnauthorizedException(ErrorMessageCodes.TokenHasExpired);
         }
 
         var isUserRolePresentInAttribute = authorizeAttributes.Where(x => x.Roles.Length != 0)

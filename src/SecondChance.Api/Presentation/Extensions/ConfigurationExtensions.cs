@@ -10,7 +10,7 @@ public static class ConfigurationExtensions
     {
         configurationBuilder.AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
-        var secretsRuntime = EnvironmentObject.GetSecretsEnvironmentValue();
+        var secretsRuntime = EnvironmentObject.GetSecretsRuntime();
         if (secretsRuntime == SecretsRuntime.UseSecrets)
         {
             var envSecretsPath = Path.Combine(environment.ContentRootPath, PresentationConstants.StaticFilesFolderName, 

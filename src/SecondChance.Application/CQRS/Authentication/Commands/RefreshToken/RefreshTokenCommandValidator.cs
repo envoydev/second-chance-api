@@ -37,15 +37,15 @@ public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenComman
     {
         var parsedAccessToken = _tokenService.ParseAccessToken(command.AccessToken);
 
-        if (parsedAccessToken == null)
+        if (!parsedAccessToken.IsValid)
         {
-            context.MessageFormatter.AppendArgument(nameof(ValidationFailure.ErrorCode), ErrorMessageCodes.TokenInvalid);
+            context.MessageFormatter.AppendArgument(nameof(ValidationFailure.ErrorCode), parsedAccessToken.ErrorCode);
 
             return false;
         }
 
         var currentUser = await _applicationDbContext.Users.AsNoTracking()
-                                                     .Where(x => x.Id == parsedAccessToken.UserId)
+                                                     .Where(x => x.Id == parsedAccessToken.Token!.UserId)
                                                      .FirstOrDefaultAsync(x => x.RefreshToken == command.RefreshToken, cancellationToken);
 
         if (currentUser == null)
@@ -60,7 +60,7 @@ public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenComman
             return true;
         }
 
-        context.MessageFormatter.AppendArgument(nameof(ValidationFailure.ErrorCode), ErrorMessageCodes.TokenExpired);
+        context.MessageFormatter.AppendArgument(nameof(ValidationFailure.ErrorCode), ErrorMessageCodes.TokenHasExpired);
 
         return false;
     }

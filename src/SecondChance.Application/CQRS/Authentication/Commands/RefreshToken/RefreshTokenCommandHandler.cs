@@ -22,7 +22,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     {
         var parsedAccessToken = _tokenService.ParseAccessToken(request.AccessToken);
 
-        var user = await _applicationDbContext.Users.Where(x => x.Id == parsedAccessToken!.UserId)
+        var user = await _applicationDbContext.Users.Where(x => x.Id == parsedAccessToken.Token!.UserId)
                                               .FirstAsync(x => x.RefreshToken == request.RefreshToken, cancellationToken);
 
         var newAccessToken = _tokenService.GenerateAccessToken(user.Id, user.Role);

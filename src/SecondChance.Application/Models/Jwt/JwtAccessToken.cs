@@ -1,6 +1,6 @@
 using SecondChance.Domain.Enums;
 
-namespace SecondChance.Application.Models;
+namespace SecondChance.Application.Models.Jwt;
 
 public class JwtAccessToken
 {

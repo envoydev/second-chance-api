@@ -3,10 +3,12 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SecondChance.Application.Constants;
+using SecondChance.Application.Errors;
 using SecondChance.Application.Logger;
-using SecondChance.Application.Models;
+using SecondChance.Application.Models.Jwt;
 using SecondChance.Application.Services;
 using SecondChance.Domain.Enums;
 
@@ -47,6 +49,10 @@ internal class TokenService : ITokenService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
+            Audience = jwtConfig.Audience,
+            Issuer = jwtConfig.Issuer,
+            IssuedAt = issuedDateTime,
+            Expires = expirationDateTime,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -74,11 +80,13 @@ internal class TokenService : ITokenService
             ExpiredAt = _dateTimeService.GetUtc().AddMilliseconds(jwtConfig.RefreshTokenExpirationMilliseconds)
         };
     }
-
-    public JwtAccessToken? ParseAccessToken(string accessToken)
+    
+    public JwtAccessTokenParseResult ParseAccessToken(string accessToken)
     {
         try
         {
+            Guard.Against.NullOrWhiteSpace(accessToken, message: $"'{accessToken}' cannot be null or empty.");
+            
             var jwtConfig = _settingsService.GetSettings().JwtConfig;
             var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
 
@@ -87,9 +95,12 @@ internal class TokenService : ITokenService
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                ValidateIssuer = false,
-                ValidateAudience = false,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
+                ValidIssuer = jwtConfig.Issuer,
+                ValidAudience = jwtConfig.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
 
@@ -97,40 +108,100 @@ internal class TokenService : ITokenService
 
             var jwtSecurityToken = (JwtSecurityToken)validatedToken;
 
-            var userId = Guard.Against.NullOrWhiteSpace(
-                jwtSecurityToken.Claims.FirstOrDefault(x => x.Type == TokenConstants.UserId)?.Value,
-                message: $"'{TokenConstants.UserId}' cannot be null or empty.");
-
-            var role = Guard.Against.NullOrWhiteSpace(
-                jwtSecurityToken.Claims.FirstOrDefault(x => x.Type == TokenConstants.Role)?.Value,
-                message: $"'{TokenConstants.Role}' cannot be null or empty.");
-
+            var userId = GetRequiredClaim(jwtSecurityToken, TokenConstants.UserId); 
+      
+            var role = GetRequiredClaim(jwtSecurityToken, TokenConstants.Role); 
             Guard.Against.Expression(result => result == false, Enum.TryParse(role, out Role roleEnum),
                 $"Cannot parse enum for '{TokenConstants.Role}'.");
 
-            var issuedAt = Guard.Against.NullOrWhiteSpace(
-                jwtSecurityToken.Claims.FirstOrDefault(x => x.Type == TokenConstants.IssuedAt)?.Value,
-                message: $"'{TokenConstants.IssuedAt}' cannot be null or empty.");
+            var issuedAt = GetRequiredClaim(jwtSecurityToken, TokenConstants.IssuedAt);
+            Guard.Against.Expression(result => result == false, int.TryParse(issuedAt, out var issuedAtTimestamp),
+                $"'{TokenConstants.IssuedAt}' is not a valid Unix timestamp.");
 
-            var expiredAt = Guard.Against.NullOrWhiteSpace(
-                jwtSecurityToken.Claims.FirstOrDefault(x => x.Type == TokenConstants.ExpiredAt)?.Value,
-                message: $"'{TokenConstants.ExpiredAt}' cannot be null or empty.");
-
-            var jwtToken = new JwtAccessToken
+            var expiredAt = GetRequiredClaim(jwtSecurityToken, TokenConstants.ExpiredAt);
+            Guard.Against.Expression(result => result == false, int.TryParse(expiredAt, out var expiredAtTimestamp),
+                $"'{TokenConstants.ExpiredAt}' is not a valid Unix timestamp.");
+            
+            return new JwtAccessTokenParseResult
             {
-                UserId = Guid.Parse(userId),
-                Role = roleEnum,
-                IssuedAtUnixTimeStamp = int.Parse(issuedAt),
-                ExpiredAtUnixTimeStamp = int.Parse(expiredAt)
+                IsValid = true,
+                Token = new JwtAccessToken
+                {
+                    UserId = Guid.Parse(userId),
+                    Role = roleEnum,
+                    IssuedAtUnixTimeStamp = issuedAtTimestamp,
+                    ExpiredAtUnixTimeStamp = expiredAtTimestamp
+                }
             };
-
-            return jwtToken;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (TryMapException(exception, out var errorCode, out var logLevel))
         {
-            _logger.LogWarning(exception, "Exception during token verifying");
-
-            return null;
+            LogException(exception, logLevel, errorCode);
+            
+            return new JwtAccessTokenParseResult
+            {
+                IsValid = false,
+                ErrorCode = errorCode
+            };
         }
     }
+
+    #region Private methods
+
+    private static string GetRequiredClaim(JwtSecurityToken jwtSecurityToken, string claimType)
+    {
+        var claimValue = jwtSecurityToken.Claims.FirstOrDefault(x => x.Type == claimType)?.Value;
+        Guard.Against.NullOrWhiteSpace(claimValue, message: $"'{claimType}' cannot be null or empty.");
+        return claimValue;
+    }
+
+    private static bool TryMapException(Exception exception, out string errorCode, out LogLevel logLevel)
+    {
+        switch (exception)
+        {
+            case SecurityTokenExpiredException:
+                errorCode = ErrorMessageCodes.TokenHasExpired;
+                logLevel = LogLevel.Information; // Just log this as info
+                return true;
+            case SecurityTokenNotYetValidException:
+                errorCode = ErrorMessageCodes.TokenNotYetValid;
+                logLevel = LogLevel.Information; // Log as info
+                return true;
+            case SecurityTokenInvalidSignatureException:
+                errorCode = ErrorMessageCodes.TokenSignatureInvalid;
+                logLevel = LogLevel.Information; // Log as info
+                return true;
+            case SecurityTokenException:
+                errorCode = ErrorMessageCodes.TokenValidationFailed;
+                logLevel = LogLevel.Information; // Log as info
+                return true;
+            default:
+                errorCode = ErrorMessageCodes.TokenUnexpectedError;
+                logLevel = LogLevel.Warning; // Unexpected exceptions should be warnings
+                return true;
+        }
+    }
+    
+    private void LogException(Exception exception, LogLevel logLevel, string errorCode)
+    {
+        var message = $"Token validation failed with error: {errorCode}";
+
+        switch (logLevel)
+        {
+            case LogLevel.Information:
+            case LogLevel.Trace:
+            case LogLevel.Debug:
+                _logger.LogInformation(exception, message);
+                break;
+            case LogLevel.Warning:
+            case LogLevel.Error:
+            case LogLevel.Critical:
+            case LogLevel.None:
+            default:
+                _logger.LogWarning(exception, message);
+                break;
+        }
+    }
+    
+    #endregion
 }

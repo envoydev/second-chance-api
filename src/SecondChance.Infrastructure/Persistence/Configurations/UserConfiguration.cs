@@ -18,7 +18,7 @@ internal class UserConfiguration : BaseAuditableEntityTypeConfiguration<User>
         builder.Property(x => x.LastName).HasMaxLength(UserValidations.LastNameMaxLength);
         builder.Property(x => x.UserName).HasMaxLength(UserValidations.UserNameMaxLength).IsRequired();
         builder.Property(x => x.Email).HasMaxLength(UserValidations.EmailMaxLength).IsRequired();
-        builder.Property(x => x.Role).IsRequired().HasDefaultValue(UserValidations.DefaultRole);
+        builder.Property(x => x.Role).IsRequired();
         builder.Property(x => x.PasswordHash).HasMaxLength(UserValidations.PasswordHashMaxLength).IsRequired();
         builder.Property(x => x.RefreshToken).HasMaxLength(UserValidations.TokenRefreshMaxLength);
         builder.Property(x => x.RefreshTokenExpiration);

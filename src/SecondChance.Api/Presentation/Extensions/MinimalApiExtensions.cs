@@ -12,7 +12,7 @@ internal static class MinimalApiExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        builder.Add(convention => convention.Metadata.Add(new AuthorizeAttribute(role)));
+        builder.Add(convention => convention.Metadata.Add(new AuthorizationAttribute(role)));
 
         return builder;
     }

@@ -3,24 +3,26 @@ using SecondChance.Application.Logger;
 using SecondChance.Application.Persistant;
 using SecondChance.Application.Services;
 using SecondChance.Domain.Entities;
-using SecondChance.Domain.Enums;
 
 namespace SecondChance.Infrastructure.Persistence;
 
 public class ApplicationDbContextInitializer : IApplicationDbContextInitializer
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IDateTimeService _dateTimeService;
     private readonly IApplicationLogger<ApplicationDbContextInitializer> _logger;
+    private readonly ApplicationDbContext _context;
+    private readonly ISettingsService _settingsService;
+    private readonly IDateTimeService _dateTimeService;
     private readonly IPasswordService _passwordService;
 
     public ApplicationDbContextInitializer(IApplicationLogger<ApplicationDbContextInitializer> logger,
         ApplicationDbContext context,
+        ISettingsService settingsService,
         IPasswordService passwordService,
         IDateTimeService dateTimeService)
     {
         _logger = logger;
         _context = context;
+        _settingsService = settingsService;
         _passwordService = passwordService;
         _dateTimeService = dateTimeService;
     }
@@ -60,12 +62,15 @@ public class ApplicationDbContextInitializer : IApplicationDbContextInitializer
             return;
         }
 
+        var applicationSettings = _settingsService.GetSettings();
+        var passwordHash = _passwordService.HashPassword(applicationSettings.SystemUser.Password);
+        
         await _context.Users.AddAsync(new User
         {
-            UserName = "super_admin",
-            Email = "admin@second-chance.io",
-            PasswordHash = _passwordService.HashPassword("Soul1234!"),
-            Role = Role.SuperAdmin,
+            UserName = applicationSettings.SystemUser.UserName,
+            Email = applicationSettings.SystemUser.Email,
+            PasswordHash = passwordHash,
+            Role = applicationSettings.SystemUser.Role,
             CreatedBy = null,
             CreatedAt = _dateTimeService.GetUtc()
         });

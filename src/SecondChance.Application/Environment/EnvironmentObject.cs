@@ -5,18 +5,28 @@ namespace SecondChance.Application.Environment;
 
 public static class EnvironmentObject
 {
-    public static EnvironmentRuntime GetCurrentEnvironmentRuntime()
+    public static string? GetEnvironmentValue()
     {
-        var environmentValue = SystemEnvironment.GetEnvironmentVariable(EnvironmentConstants.EnvironmentName);
+        return SystemEnvironment.GetEnvironmentVariable(EnvironmentConstants.EnvironmentName);
+    }
+    
+    public static EnvironmentRuntime GetEnvironmentRuntime()
+    {
+        var environmentValue = GetEnvironmentValue();
         
         return Enum.TryParse(environmentValue, true, out EnvironmentRuntime environmentRuntime) 
             ? environmentRuntime 
             : EnvironmentRuntime.Development;
     }
     
-    public static SecretsRuntime GetSecretsEnvironmentValue()
+    public static string? GetSecretsValue()
     {
-        var environmentValue = SystemEnvironment.GetEnvironmentVariable(EnvironmentConstants.SecretsEnvironmentName);
+        return SystemEnvironment.GetEnvironmentVariable(EnvironmentConstants.SecretsEnvironmentName);
+    }
+    
+    public static SecretsRuntime GetSecretsRuntime()
+    {
+        var environmentValue = GetSecretsValue();
         
         return Enum.TryParse(environmentValue, true, out SecretsRuntime secretsRuntime) 
             ? secretsRuntime 

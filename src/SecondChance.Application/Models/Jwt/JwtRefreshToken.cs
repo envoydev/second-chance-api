@@ -1,4 +1,4 @@
-namespace SecondChance.Application.Models;
+namespace SecondChance.Application.Models.Jwt;
 
 public class JwtRefreshToken
 {

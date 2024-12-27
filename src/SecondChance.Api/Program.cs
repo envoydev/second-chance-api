@@ -11,7 +11,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     {
-        EnvironmentName = EnvironmentObject.GetCurrentEnvironmentRuntime().ToString(),
+        EnvironmentName = EnvironmentObject.GetEnvironmentRuntime().ToString(),
         ContentRootPath = AppContext.BaseDirectory,
         Args = args
     });

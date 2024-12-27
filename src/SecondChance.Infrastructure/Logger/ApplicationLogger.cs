@@ -26,6 +26,13 @@ internal class ApplicationLogger<T> : IApplicationLogger<T>
         #pragma warning restore CA2254
     }
 
+    public void LogInformation(Exception? exception, string? message, params object?[] args)
+    {
+        #pragma warning disable CA2254
+        _logger.LogInformation(exception, message, args);
+        #pragma warning restore CA2254
+    }
+
     public void LogWarning(string? message, params object?[] args)
     {
         #pragma warning disable CA2254
