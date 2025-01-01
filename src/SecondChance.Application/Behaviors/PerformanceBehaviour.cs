@@ -5,7 +5,7 @@ using SecondChance.Application.Services;
 
 namespace SecondChance.Application.Behaviors;
 
-public class PerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+internal sealed class PerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     private readonly IApplicationLogger<TRequest> _logger;
     private readonly ISessionService _sessionService;

@@ -6,7 +6,7 @@ namespace SecondChance.Infrastructure.Extensions;
 
 public static class ConfigurationExtensions
 {
-    public static string GetDatabaseConnectionString(this IConfiguration configuration)
+    internal static string GetDatabaseConnectionString(this IConfiguration configuration)
     {
         var applicationSettings = configuration.Get<ApplicationSettings>();
 
@@ -16,14 +16,5 @@ public static class ConfigurationExtensions
             message: $"Connection string '{nameof(applicationSettings.ConnectionStrings.DatabaseConnection)}' not found.");
 
         return connectionString;
-    }
-
-    public static ApplicationSettings GetApplicationSettings(this IConfiguration configuration)
-    {
-        var applicationSettings = configuration.Get<ApplicationSettings>();
-
-        Guard.Against.Null(applicationSettings, message: $"{nameof(ApplicationSettings)} cannot be null.");
-
-        return applicationSettings;
     }
 }

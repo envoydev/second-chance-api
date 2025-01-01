@@ -1,18 +1,17 @@
 using SecondChance.Application.Security;
-using SecondChance.Domain.Enums;
 
 namespace SecondChance.Api.Presentation.Extensions;
 
 internal static class MinimalApiExtensions
 {
-    public static TBuilder AuthorizationRequired<TBuilder>(this TBuilder builder, Role[] role) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder AuthorizationRequired<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         if (builder == null)
         {
             throw new ArgumentNullException(nameof(builder));
         }
 
-        builder.Add(convention => convention.Metadata.Add(new AuthorizationAttribute(role)));
+        builder.Add(convention => convention.Metadata.Add(new AuthorizationAttribute()));
 
         return builder;
     }

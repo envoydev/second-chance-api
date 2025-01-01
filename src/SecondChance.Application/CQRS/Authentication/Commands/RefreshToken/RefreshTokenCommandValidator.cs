@@ -8,7 +8,7 @@ using SecondChance.Application.Services;
 namespace SecondChance.Application.CQRS.Authentication.Commands.RefreshToken;
 
 // ReSharper disable once UnusedType.Global
-public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
+internal sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
 {
     private readonly IApplicationDbContext _applicationDbContext;
     private readonly IDateTimeService _dateTimeService;

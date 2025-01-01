@@ -4,7 +4,7 @@ using SecondChance.Domain.Entities;
 
 namespace SecondChance.Application.CQRS.Transactions.Mappings;
 
-public class ToTransactionResultMapping : IRegister
+internal sealed class ToTransactionResultMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

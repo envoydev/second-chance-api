@@ -1,4 +1,3 @@
-using SecondChance.Domain.Entities;
 using SecondChance.Domain.Enums;
 
 namespace SecondChance.Application.Models.Settings;

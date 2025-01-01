@@ -6,7 +6,7 @@ using SecondChance.Domain.Entities;
 
 namespace SecondChance.Infrastructure.Persistence;
 
-public class ApplicationDbContextInitializer : IApplicationDbContextInitializer
+internal class ApplicationDbContextInitializer : IApplicationDbContextInitializer
 {
     private readonly IApplicationLogger<ApplicationDbContextInitializer> _logger;
     private readonly ApplicationDbContext _context;

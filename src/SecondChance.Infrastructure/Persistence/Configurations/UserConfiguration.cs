@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SecondChance.Application.Persistant;
 using SecondChance.Domain.Entities;
-using SecondChance.Domain.Enums;
 using SecondChance.Domain.Validations;
 using SecondChance.Infrastructure.Persistence.Common;
 

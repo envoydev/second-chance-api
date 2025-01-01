@@ -1,4 +1,3 @@
-using SecondChance.Application.Models;
 using SecondChance.Application.Models.Jwt;
 using SecondChance.Domain.Enums;
 

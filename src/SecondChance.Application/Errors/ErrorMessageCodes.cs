@@ -5,6 +5,7 @@ public abstract class ErrorMessageCodes
     // Validation Specific Codes
     public const string ValidationWrongUserNameOrPassword = "VALIDATION_WRONG_USERNAME_OR_PASSWORD";
     public const string ValidationRequiredValue = "VALIDATION_REQUIRED_VALUE";
+    public const string ValidationRequiredOneOfValue = "VALIDATION_REQUIRED_ONE_OF_VALUE";
     public const string ValidationInvalidValue = "VALIDATION_INVALID_VALUE";
     public const string ValidationMaxLengthExceeded = "VALIDATION_MAX_LENGTH_EXCEEDED";
     public const string ValidationInvalidCharacters = "VALIDATION_INVALID_CHARACTERS";

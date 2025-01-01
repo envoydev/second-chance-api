@@ -7,7 +7,7 @@ public class GetAllProjectsQueryValidator : AbstractValidator<GetAllProjectsQuer
 {
     public GetAllProjectsQueryValidator()
     {
-        Include(new DateRangeFilterValidator());
+        Include(new DateRangeQueryFilterValidator());
         
         Include(new PagerFilterValidator());
     }

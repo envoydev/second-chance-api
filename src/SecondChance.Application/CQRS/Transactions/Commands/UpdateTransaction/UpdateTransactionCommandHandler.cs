@@ -22,11 +22,7 @@ public sealed class UpdateTransactionCommandHandler : IRequestHandler<UpdateTran
     {
         var transactionToUpdate = await _applicationDbContext.Transactions.FirstAsync(x => x.Id == request.TransactionId, cancellationToken);
 
-        transactionToUpdate.ProjectId = request.ProjectId;
-        transactionToUpdate.OperationType = request.OperationType!.Value;
-        transactionToUpdate.CurrencyType = request.CurrencyType!.Value;
-        transactionToUpdate.Amount = request.Amount!.Value;
-        transactionToUpdate.Description = request.Description;
+        transactionToUpdate = _mapper.Map(request, transactionToUpdate);
 
         await _applicationDbContext.SaveChangesAsync(cancellationToken);
 

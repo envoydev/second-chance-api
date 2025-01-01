@@ -1,9 +1,9 @@
 using Carter;
+using MapsterMapper;
 using MediatR;
 using SecondChance.Api.Presentation.Endpoints.Models;
 using SecondChance.Api.Presentation.Extensions;
 using SecondChance.Application.CQRS.Users.Queries.GetAllUsers;
-using SecondChance.Domain.Enums;
 
 namespace SecondChance.Api.Presentation.Endpoints;
 
@@ -14,17 +14,17 @@ public class UserEndpoints : ICarterModule
         var group = app.MapGroup("api/v{versions:apiVersion}/users")
                        .WithApiVersionSet(app.GetApplicationApiVersionSet())
                        .WithOpenApi()
-                       .AuthorizationRequired([Role.Admin, Role.User]);
+                       .AuthorizationRequired();
 
         group.MapGet("/", GetAllUsers)
              .MapToApiVersion(1);
     }
 
-    private static async Task<IResult> GetAllUsers([AsParameters] GetUsersV1QueryParams queryParams, ISender sender)
+    private static async Task<IResult> GetAllUsers([AsParameters] GetUsersV1QueryParams queryParams, ISender sender, IMapper mapper)
     {
-        var query = new GetAllUsersQuery(queryParams.Skip, queryParams.Take, queryParams.From, queryParams.To);
+        var getAllUsersQuery = mapper.Map<GetAllUsersQuery>(queryParams);
         
-        var result = await sender.Send(query);
+        var result = await sender.Send(getAllUsersQuery);
 
         return Results.Ok(result);
     }

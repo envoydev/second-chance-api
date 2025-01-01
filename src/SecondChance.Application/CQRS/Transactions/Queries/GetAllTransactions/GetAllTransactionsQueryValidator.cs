@@ -1,33 +1,21 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using SecondChance.Application.Errors;
+using SecondChance.Application.CQRS.Transactions.Validators;
 using SecondChance.Application.Persistant;
 using SecondChance.Application.Validators;
 
 namespace SecondChance.Application.CQRS.Transactions.Queries.GetAllTransactions;
 
-public class GetAllTransactionsQueryValidator : AbstractValidator<GetAllTransactionsQuery>
+// ReSharper disable once UnusedType.Global
+internal sealed class GetAllTransactionsQueryValidator : AbstractValidator<GetAllTransactionsQuery>
 {
-    private readonly IApplicationDbContext _applicationDbContext;
-    
     public GetAllTransactionsQueryValidator(IApplicationDbContext applicationDbContext)
     {
-        _applicationDbContext = applicationDbContext;
-
         RuleFor(v => v.ProjectId)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidValue)
-            .MustAsync(CheckIsProjectExistAsync)
-            .WithErrorCode(ErrorMessageCodes.ValidationRecordNotFound)
+            .SetValidator(new NullableStructTypeValidator<Guid>(new TransactionProjectIdValidator(applicationDbContext)))
             .When(x => x.ProjectId.HasValue);
         
-        Include(new DateRangeFilterValidator());
+        Include(new DateRangeQueryFilterValidator());
         
         Include(new PagerFilterValidator());
-    }
-
-    private Task<bool> CheckIsProjectExistAsync(GetAllTransactionsQuery qetAllTransactionsQuery, Guid? projectId, CancellationToken cancellationToken)
-    {
-        return _applicationDbContext.Projects.AsNoTracking().AnyAsync(x => x.Id == projectId!, cancellationToken);
     }
 }

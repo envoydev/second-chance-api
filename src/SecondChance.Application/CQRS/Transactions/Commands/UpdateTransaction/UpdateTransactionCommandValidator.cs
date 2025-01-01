@@ -1,56 +1,32 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using SecondChance.Application.Errors;
+using SecondChance.Application.CQRS.Transactions.Validators;
 using SecondChance.Application.Persistant;
-using SecondChance.Domain.Validations;
+using SecondChance.Application.Validators;
 
 namespace SecondChance.Application.CQRS.Transactions.Commands.UpdateTransaction;
 
-public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransactionCommand>
+// ReSharper disable once UnusedType.Global
+internal sealed class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransactionCommand>
 {
-    private readonly IApplicationDbContext _applicationDbContext;
-
     public UpdateTransactionCommandValidator(IApplicationDbContext applicationDbContext)
     {
-        _applicationDbContext = applicationDbContext;
-
         RuleFor(v => v.TransactionId)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .MustAsync(CheckIsTransactionExistAsync)
-            .WithErrorCode(ErrorMessageCodes.ValidationRecordNotFound);
+            .SetValidator(new TransactionIdValidator(applicationDbContext));
 
         RuleFor(v => v.ProjectId)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .MustAsync(CheckIsProjectExistAsync)
-            .WithErrorCode(ErrorMessageCodes.ValidationRecordNotFound);
-
-        RuleFor(v => v.CurrencyType)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue);
+            .SetValidator(new TransactionProjectIdValidator(applicationDbContext));
 
         RuleFor(v => v.OperationType)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue);
+            .SetValidator(new TransactionOperationTypeValidator());
 
         RuleFor(v => v.Amount)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue);
+            .SetValidator(new TransactionAmountValidator());
 
         RuleFor(v => v.Description)
-            .MaximumLength(TransactionValidations.DescriptionMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationMaxLengthExceeded)
-            .WithState(_ => new { MaxLength = TransactionValidations.DescriptionMaxLength });
-    }
-
-    private Task<bool> CheckIsTransactionExistAsync(UpdateTransactionCommand updateTransactionCommand, Guid transactionId, CancellationToken cancellationToken)
-    {
-        return _applicationDbContext.Transactions.AsNoTracking().AnyAsync(x => x.Id == transactionId, cancellationToken);
-    }
-
-    private Task<bool> CheckIsProjectExistAsync(UpdateTransactionCommand updateTransactionCommand, Guid projectId, CancellationToken cancellationToken)
-    {
-        return _applicationDbContext.Projects.AsNoTracking().AnyAsync(x => x.Id == projectId, cancellationToken);
+            .SetValidator(new NullValueValidator<string>(new TransactionDescriptionValidator()))
+            .When(v => v.Description != null);
+        
+        RuleFor(v => v)
+            .SetValidator(new TransactionCurrencyValidator());
     }
 }

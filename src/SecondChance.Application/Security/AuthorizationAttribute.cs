@@ -5,7 +5,7 @@ namespace SecondChance.Application.Security;
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class AuthorizationAttribute : Attribute
 {
-    private AuthorizationAttribute()
+    public AuthorizationAttribute()
     {
     }
 

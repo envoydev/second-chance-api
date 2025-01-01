@@ -1,6 +1,6 @@
 namespace SecondChance.Infrastructure.Constants;
 
-public abstract class LoggerConstants
+internal abstract class LoggerConstants
 {
     public const string FilesFolder = "Errors";
     public const string FileName = "logs.txt";

@@ -1,10 +1,10 @@
 using FluentValidation;
 using SecondChance.Application.Errors;
-using SecondChance.Application.Models.Filters;
+using SecondChance.Application.Models.QueryFilters;
 
 namespace SecondChance.Application.Validators;
 
-public class PagerFilterValidator : AbstractValidator<IPagerFilter>
+internal class PagerFilterValidator : AbstractValidator<IPagerQueryFilter>
 {
     public PagerFilterValidator()
     {

@@ -1,4 +1,5 @@
 using Carter;
+using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SecondChance.Api.Presentation.Endpoints.Models;
@@ -7,7 +8,6 @@ using SecondChance.Application.CQRS.Projects.Commands.CreateProject;
 using SecondChance.Application.CQRS.Projects.Commands.DeleteProject;
 using SecondChance.Application.CQRS.Projects.Commands.UpdateProject;
 using SecondChance.Application.CQRS.Projects.Queries.GetAllProjects;
-using SecondChance.Domain.Enums;
 
 namespace SecondChance.Api.Presentation.Endpoints;
 
@@ -19,7 +19,7 @@ public class ProjectEndpoints : ICarterModule
         var group = app.MapGroup("api/v{versions:apiVersion}/projects")
                        .WithApiVersionSet(app.GetApplicationApiVersionSet())
                        .WithOpenApi()
-                       .AuthorizationRequired([Role.User]);
+                       .AuthorizationRequired();
 
         group.MapGet("/", GetAllProjectsV1Async)
              .MapToApiVersion(1);
@@ -34,25 +34,29 @@ public class ProjectEndpoints : ICarterModule
              .MapToApiVersion(1);
     }
     
-    private static async Task<IResult> GetAllProjectsV1Async([AsParameters] GetProjectsV1QueryParams queryParams, ISender sender)
+    private static async Task<IResult> GetAllProjectsV1Async([AsParameters] GetProjectsV1QueryParams queryParams, ISender sender, IMapper mapper)
     {
-         var query = new GetAllProjectsQuery(queryParams.Skip, queryParams.Take, queryParams.From, queryParams.To);
+         var getAllProjectsQuery = mapper.Map<GetAllProjectsQuery>(queryParams);
          
-         var result = await sender.Send(query);
+         var result = await sender.Send(getAllProjectsQuery);
 
          return Results.Ok(result);
     }
     
-    private static async Task<IResult> CreateProjectV1Async([FromBody] CreateProjectV1Body body, ISender sender)
+    private static async Task<IResult> CreateProjectV1Async([FromBody] CreateProjectV1Body body, ISender sender, IMapper mapper)
     {
-         var result = await sender.Send(new CreateProjectCommand(body.Name));
+         var createProjectCommand = mapper.Map<CreateProjectCommand>(body);
+         
+         var result = await sender.Send(createProjectCommand);
 
          return Results.Ok(result);
     }
     
-    private static async Task<IResult> UpdateProjectV1Async([FromRoute] Guid id, [FromBody] UpdateProjectV1Body body, ISender sender)
+    private static async Task<IResult> UpdateProjectV1Async([FromRoute] Guid id, [FromBody] UpdateProjectV1Body body, ISender sender, IMapper mapper)
     {
-         await sender.Send(new UpdateProjectCommand(id, body.Name));
+         var updateProjectCommand = mapper.Map<UpdateProjectCommand>(body) with { ProjectId = id };
+         
+         await sender.Send(updateProjectCommand);
 
          return Results.NoContent();
     } 

@@ -3,11 +3,11 @@ using SecondChance.Application.Validators;
 
 namespace SecondChance.Application.CQRS.Users.Queries.GetAllUsers;
 
-public class GetAllUsersQueryValidator : AbstractValidator<GetAllUsersQuery>
+internal sealed class GetAllUsersQueryValidator : AbstractValidator<GetAllUsersQuery>
 {
     public GetAllUsersQueryValidator()
     {
-        Include(new DateRangeFilterValidator());
+        Include(new DateRangeQueryFilterValidator());
         
         Include(new PagerFilterValidator());
     }

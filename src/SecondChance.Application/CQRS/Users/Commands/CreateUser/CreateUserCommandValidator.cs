@@ -1,69 +1,42 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using SecondChance.Application.CQRS.Users.Validators;
 using SecondChance.Application.Errors;
 using SecondChance.Application.Persistant;
 using SecondChance.Application.Services;
-using SecondChance.Domain.Enums;
-using SecondChance.Domain.Validations;
+using SecondChance.Application.Validators;
 
 namespace SecondChance.Application.CQRS.Users.Commands.CreateUser;
 
-public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+// ReSharper disable once UnusedType.Global
+internal sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     private readonly IApplicationDbContext _applicationDbContext;
-    private readonly ISessionService _sessionService;
 
     public CreateUserCommandValidator(IApplicationDbContext applicationDbContext, 
         ISessionService sessionService)
     {
         _applicationDbContext = applicationDbContext;
-        _sessionService = sessionService;
 
         RuleFor(v => v.UserName)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .Length(UserValidations.UserNameMinLength, UserValidations.UserNameMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = UserValidations.UserNameMinLength, MaxLength = UserValidations.UserNameMaxLength })
-            .Matches(UserValidations.UserNameCharactersValidation)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidCharacters)
-            .WithState(_ => new { ValidCharacters = UserValidations.UserNameAllowedCharacters })
+            .SetValidator(new UserUserNameValidator())
             .MustAsync(CheckIsUserNameWithSameNameDoesNotExistAsync)
             .WithErrorCode(ErrorMessageCodes.ValidationSameValueExist);
         
         RuleFor(v => v.Email)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .Length(UserValidations.EmailMinLength, UserValidations.EmailMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = UserValidations.EmailMinLength, MaxLength = UserValidations.EmailMaxLength })
-            .EmailAddress()
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidCharacters)
+            .SetValidator(new UserEmailValidator())
             .MustAsync(CheckIsUserWithSameEmailDoesNotExistAsync)
             .WithErrorCode(ErrorMessageCodes.ValidationSameValueExist);
         
         RuleFor(v => v.Role)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .MustAsync(CheckIsRoleAssigningAvailableAsync)
-            .WithErrorCode(ErrorMessageCodes.ValidationActionIsNotAllowed);
+            .SetValidator(new UserRoleValidator(sessionService));
 
         RuleFor(v => v.FirstName)
-            .Length(UserValidations.FirstNameMinLength, UserValidations.FirstNameMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = UserValidations.FirstNameMinLength, MaxLength = UserValidations.LastNameMaxLength })
-            .Matches(UserValidations.FirstNameCharactersValidation)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidCharacters)
-            .WithState(_ => new { ValidCharacters = UserValidations.FirstNameAllowedCharacters })
+            .SetValidator(new NullValueValidator<string>(new UserFirstNameValidator()))
             .When(v => v.FirstName != null);
         
         RuleFor(v => v.LastName)
-            .Length(UserValidations.LastNameMinLength, UserValidations.FirstNameMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = UserValidations.LastNameMinLength, MaxLength = UserValidations.LastNameMaxLength })
-            .Matches(UserValidations.LastNameCharactersValidation)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidCharacters)
-            .WithState(_ => new { ValidCharacters = UserValidations.LastNameAllowedCharacters })
+            .SetValidator(new NullValueValidator<string>(new UserLastNameValidator()))
             .When(v => v.LastName != null);
     }
 
@@ -77,10 +50,5 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
         CancellationToken cancellationToken)
     {
         return !await _applicationDbContext.Users.AsNoTracking().AnyAsync(x => x.Email == email, cancellationToken);
-    }
-    
-    private Task<bool> CheckIsRoleAssigningAvailableAsync(CreateUserCommand createUserCommand, Role? role, CancellationToken cancellationToken)
-    {
-        return !_sessionService.UserRole.HasValue ? Task.FromResult(false) : Task.FromResult(_sessionService.UserRole < role);
     }
 }

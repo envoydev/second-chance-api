@@ -15,7 +15,8 @@ internal class TransactionConfiguration : BaseAuditableEntityTypeConfiguration<T
 
         builder.Property(x => x.ProjectId).IsRequired();
         builder.Property(x => x.Amount).HasPrecision(28, 2).IsRequired();
-        builder.Property(x => x.CurrencyType).IsRequired();
+        builder.Property(x => x.CurrencyCode);
+        builder.Property(x => x.CryptoCurrencyCode).HasMaxLength(TransactionValidations.CryptoCurrencyCodeMaxLength);
         builder.Property(x => x.OperationType).IsRequired();
         builder.Property(x => x.Description).HasMaxLength(TransactionValidations.DescriptionMaxLength);
 

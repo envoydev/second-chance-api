@@ -1,12 +1,13 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using SecondChance.Application.CQRS.Projects.Validators;
 using SecondChance.Application.Errors;
 using SecondChance.Application.Persistant;
-using SecondChance.Domain.Validations;
 
 namespace SecondChance.Application.CQRS.Projects.Commands.CreateProject;
 
-public class CreateProjectCommandValidator : AbstractValidator<CreateProjectCommand>
+// ReSharper disable once UnusedType.Global
+internal sealed class CreateProjectCommandValidator : AbstractValidator<CreateProjectCommand>
 {
     private readonly IApplicationDbContext _applicationDbContext;
 
@@ -15,11 +16,12 @@ public class CreateProjectCommandValidator : AbstractValidator<CreateProjectComm
         _applicationDbContext = applicationDbContext;
 
         RuleFor(v => v.Name)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .Length(ProjectValidations.NameMinLength, ProjectValidations.NameMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = ProjectValidations.NameMinLength, MaxLength = ProjectValidations.NameMaxLength })
+            .SetValidator(new ProjectNameValidator())
+            .MustAsync(CheckIsProjectWithSameNameDoesNotExistAsync)
+            .WithErrorCode(ErrorMessageCodes.ValidationSameValueExist);
+        
+        RuleFor(v => v.Name)
+            .SetValidator(new ProjectNameValidator())
             .MustAsync(CheckIsProjectWithSameNameDoesNotExistAsync)
             .WithErrorCode(ErrorMessageCodes.ValidationSameValueExist);
     }

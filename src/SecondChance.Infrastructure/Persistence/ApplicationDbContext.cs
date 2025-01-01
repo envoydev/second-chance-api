@@ -5,7 +5,7 @@ using SecondChance.Domain.Entities;
 
 namespace SecondChance.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+internal class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     private IDbContextTransaction? _currentTransaction;
 

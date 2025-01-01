@@ -21,9 +21,9 @@ public sealed class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectC
     public async Task<ProjectResult> Handle(UpdateProjectCommand request, CancellationToken cancellationToken)
     {
         var project = await _applicationDbContext.Projects.FirstAsync(x => x.Id == request.ProjectId, cancellationToken);
-
-        project.Name = request.Name;
-
+        
+        project = _mapper.Map(request, project);
+        
         await _applicationDbContext.SaveChangesAsync(cancellationToken);
 
         var projectResult = _mapper.Map<ProjectResult>(project);

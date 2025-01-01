@@ -7,7 +7,7 @@ using SecondChance.Application.Services;
 
 namespace SecondChance.Application.Behaviors;
 
-public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+internal sealed class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     private readonly IDateTimeService _dateTimeService;
     private readonly ISessionService _sessionService;

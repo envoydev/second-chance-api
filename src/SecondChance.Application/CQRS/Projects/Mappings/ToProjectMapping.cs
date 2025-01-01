@@ -5,7 +5,7 @@ using SecondChance.Domain.Entities;
 
 namespace SecondChance.Application.CQRS.Projects.Mappings;
 
-public class ToProjectMapping : IRegister
+internal sealed class ToProjectMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

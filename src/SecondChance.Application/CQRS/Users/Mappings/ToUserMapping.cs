@@ -4,7 +4,7 @@ using SecondChance.Domain.Entities;
 
 namespace SecondChance.Application.CQRS.Users.Mappings;
 
-public class ToUserMapping : IRegister
+internal sealed class ToUserMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

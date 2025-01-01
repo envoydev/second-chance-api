@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Carter;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using SecondChance.Api.Presentation.Extensions;
 using SecondChance.Api.Presentation.Logger.Enrichers;
@@ -14,6 +15,8 @@ internal static class DependencyInjection
 {
     public static void AddPresentation(this IServiceCollection services)
     {
+        var assembly = typeof(DependencyInjection).Assembly;
+        
         services.AddEndpointsApiExplorer();
 
         services.AddApiVersioning(SetApiVersioningOptions)
@@ -40,6 +43,10 @@ internal static class DependencyInjection
         services.AddScoped<ISessionService, SessionService>();
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IJsonSerializerService, JsonSerializeService>();
+        
+        // Mapper
+        TypeAdapterConfig.GlobalSettings.Scan(assembly);
+        services.AddMapster();
     }
 
     #region Private methods

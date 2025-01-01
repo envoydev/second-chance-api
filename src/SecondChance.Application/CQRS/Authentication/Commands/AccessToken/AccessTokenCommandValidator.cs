@@ -8,7 +8,7 @@ using SecondChance.Application.Services;
 namespace SecondChance.Application.CQRS.Authentication.Commands.AccessToken;
 
 // ReSharper disable once UnusedType.Global
-public class AccessTokenCommandValidator : AbstractValidator<AccessTokenCommand>
+internal sealed class AccessTokenCommandValidator : AbstractValidator<AccessTokenCommand>
 {
     private readonly IApplicationDbContext _applicationDbContext;
     private readonly IPasswordService _passwordService;

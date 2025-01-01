@@ -1,12 +1,13 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using SecondChance.Application.CQRS.Projects.Validators;
 using SecondChance.Application.Errors;
 using SecondChance.Application.Persistant;
-using SecondChance.Domain.Validations;
 
 namespace SecondChance.Application.CQRS.Projects.Commands.UpdateProject;
 
-public class UpdateProjectCommandValidator : AbstractValidator<UpdateProjectCommand>
+// ReSharper disable once UnusedType.Global
+internal sealed class UpdateProjectCommandValidator : AbstractValidator<UpdateProjectCommand>
 {
     private readonly IApplicationDbContext _applicationDbContext;
 
@@ -15,24 +16,12 @@ public class UpdateProjectCommandValidator : AbstractValidator<UpdateProjectComm
         _applicationDbContext = applicationDbContext;
 
         RuleFor(v => v.ProjectId)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .MustAsync(CheckIsProjectExistAsync)
-            .WithErrorCode(ErrorMessageCodes.ValidationRecordNotFound);
-
+            .SetValidator(new ProjectIdValidator(applicationDbContext));
+        
         RuleFor(v => v.Name)
-            .NotEmpty()
-            .WithErrorCode(ErrorMessageCodes.ValidationRequiredValue)
-            .Length(ProjectValidations.NameMinLength, ProjectValidations.NameMaxLength)
-            .WithErrorCode(ErrorMessageCodes.ValidationInvalidRange)
-            .WithState(_ => new { MinLength = ProjectValidations.NameMinLength, MaxLength = ProjectValidations.NameMaxLength })
+            .SetValidator(new ProjectNameValidator())
             .MustAsync(CheckProjectWithSameIsNotExistAsync)
             .WithErrorCode(ErrorMessageCodes.ValidationSameValueExist);
-    }
-
-    private Task<bool> CheckIsProjectExistAsync(UpdateProjectCommand updateProjectCommand, Guid projectId, CancellationToken cancellationToken)
-    {
-        return _applicationDbContext.Projects.AsNoTracking().AnyAsync(x => x.Id == projectId, cancellationToken);
     }
 
     private async Task<bool> CheckProjectWithSameIsNotExistAsync(UpdateProjectCommand updateProjectCommand, string name, CancellationToken cancellationToken)

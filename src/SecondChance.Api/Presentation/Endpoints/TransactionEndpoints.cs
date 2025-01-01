@@ -1,4 +1,5 @@
 using Carter;
+using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SecondChance.Api.Presentation.Endpoints.Models;
@@ -7,7 +8,6 @@ using SecondChance.Application.CQRS.Transactions.Commands.CreateTransaction;
 using SecondChance.Application.CQRS.Transactions.Commands.DeleteTransaction;
 using SecondChance.Application.CQRS.Transactions.Commands.UpdateTransaction;
 using SecondChance.Application.CQRS.Transactions.Queries.GetAllTransactions;
-using SecondChance.Domain.Enums;
 
 namespace SecondChance.Api.Presentation.Endpoints;
 
@@ -19,7 +19,7 @@ public class TransactionEndpoints : ICarterModule
         var group = app.MapGroup("api/v{versions:apiVersion}/transactions")
                        .WithApiVersionSet(app.GetApplicationApiVersionSet())
                        .WithOpenApi()
-                       .AuthorizationRequired([Role.User]);
+                       .AuthorizationRequired();
 
         group.MapGet("/", GetTransactionsV1Async)
              .MapToApiVersion(1);
@@ -34,32 +34,29 @@ public class TransactionEndpoints : ICarterModule
              .MapToApiVersion(1);
     }
     
-    private static async Task<IResult> GetTransactionsV1Async([AsParameters] GetTransactionsV1QueryParams queryParams, ISender sender)
+    private static async Task<IResult> GetTransactionsV1Async([AsParameters] GetTransactionsV1QueryParams queryParams, ISender sender, IMapper mapper)
     {
-        var query = new GetAllTransactionsQuery(queryParams.ProjectId, queryParams.Skip, queryParams.Take, 
-            queryParams.From, queryParams.To);
+        var getAllTransactionsQuery = mapper.Map<GetAllTransactionsQuery>(queryParams);
         
-        var result = await sender.Send(query);
+        var result = await sender.Send(getAllTransactionsQuery);
 
         return Results.Ok(result);
     }
     
-    private static async Task<IResult> CreateTransactionV1Async([FromBody] CreateTransactionV1Body body, ISender sender)
+    private static async Task<IResult> CreateTransactionV1Async([FromBody] CreateTransactionV1Body body, ISender sender, IMapper mapper)
     {
-        var command = new CreateTransactionCommand(body.ProjectId, body.OperationType, body.CurrencyType, 
-            body.Amount, body.Description);
+        var createTransactionCommand = mapper.Map<CreateTransactionCommand>(body);
         
-        var result = await sender.Send(command);
+        var result = await sender.Send(createTransactionCommand);
 
         return Results.Ok(result);
     }
     
-    private static async Task<IResult> UpdateTransactionV1Async([FromRoute] Guid id, [FromBody] UpdateTransactionV1Body body, ISender sender)
+    private static async Task<IResult> UpdateTransactionV1Async([FromRoute] Guid id, [FromBody] UpdateTransactionV1Body body, ISender sender, IMapper mapper)
     {
-        var command = new UpdateTransactionCommand(id, body.ProjectId, body.OperationType, body.CurrencyType, 
-            body.Amount, body.Description);
+        var updateTransactionCommand = mapper.Map<UpdateTransactionCommand>(body) with { TransactionId = id };
         
-        await sender.Send(command);
+        await sender.Send(updateTransactionCommand);
 
         return Results.NoContent();
     } 

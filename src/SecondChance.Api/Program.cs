@@ -5,7 +5,6 @@ using SecondChance.Api.Presentation.Extensions;
 using SecondChance.Application;
 using SecondChance.Application.Environment;
 using SecondChance.Infrastructure;
-using SecondChance.Infrastructure.Extensions;
 
 try
 {
