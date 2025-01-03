@@ -18,6 +18,5 @@ public class SerilogJsonFormatter : ITextFormatter
     {
         CompactJsonFormatter.FormatEvent(logEvent, output, _valueFormatter);
         output.Write(Environment.NewLine);
-        output.WriteLine();
     }
 }

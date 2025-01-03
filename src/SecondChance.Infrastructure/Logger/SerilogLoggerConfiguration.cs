@@ -1,9 +1,7 @@
-using SecondChance.Application.Environment;
 using SecondChance.Application.Services;
-using SecondChance.Infrastructure.Constants;
 using Serilog;
 using Serilog.Core;
-using Serilog.Events;
+using Serilog.Extensions.Logging;
 using Serilog.Formatting;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -26,42 +24,28 @@ internal class SerilogLoggerConfiguration
 
     public ILogger CreateConfiguration()
     {
-        var minimumLogLevel = GetDefaultLogLevel(_settingsService.GetCurrentRuntimeEnvironment());
-        var path = Path.Combine(_settingsService.GetStaticFilesPath(), LoggerConstants.FilesFolder);
+        var settings = _settingsService.GetSettings();
 
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
+        Directory.CreateDirectory(settings.Logger.FileFolderPath);
 
         var logger = new LoggerConfiguration()
-                     .MinimumLevel.Is(minimumLogLevel)
                      .Enrich.FromLogContext()
                      .Enrich.WithMachineName()
                      .Enrich.WithThreadId()
                      .Enrich.WithThreadName()
                      .Enrich.WithEnvironmentName()
                      .Enrich.With(_serilogEnrichers.ToArray())
-                     .WriteTo.Console(outputTemplate: LoggerConstants.ConsoleMessageTemplate,
+                     .WriteTo.Console(LevelConvert.ToSerilogLevel(settings.Logger.ConsoleLogLevel),
+                         outputTemplate: settings.Logger.ConsoleMessageTemplate,
                          theme: AnsiConsoleTheme.Code,
                          applyThemeToRedirectedOutput: true)
                      .WriteTo.File(_jsonTextFormatter,
-                         Path.Combine(path, LoggerConstants.FileName),
-                         LogEventLevel.Error,
+                         Path.Combine(settings.Logger.FileFolderPath, settings.Logger.FileName),
+                         LevelConvert.ToSerilogLevel(settings.Logger.FileLogLevel),
                          rollingInterval: RollingInterval.Day,
                          rollOnFileSizeLimit: true,
                          fileSizeLimitBytes: 25 * 1024 * 1024);
 
         return logger.CreateLogger();
-    }
-
-    private static LogEventLevel GetDefaultLogLevel(EnvironmentRuntime environmentRuntime)
-    {
-        return environmentRuntime switch
-        {
-            EnvironmentRuntime.Development => LogEventLevel.Debug,
-            EnvironmentRuntime.Production => LogEventLevel.Information,
-            _ => LogEventLevel.Debug
-        };
     }
 }

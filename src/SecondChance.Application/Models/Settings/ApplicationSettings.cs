@@ -6,4 +6,5 @@ public class ApplicationSettings
     public JwtConfigSettings JwtConfig { get; init; } = null!;
     public SystemUserSettings SystemUser { get; init; } = null!;
     public RequestConfigSettings RequestConfig { get; init; } = null!;
+    public LoggerSettings Logger { get; init; } = null!;
 }

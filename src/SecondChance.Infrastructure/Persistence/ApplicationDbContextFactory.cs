@@ -24,7 +24,7 @@ internal class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applica
                 optional: true, 
                 reloadOnChange: true);
 
-        if (GetEnumArgumentValue<SecretsRuntime>(args, "--secrets=", EnvironmentObject.GetSecretsValue()) == SecretsRuntime.UseSecrets)
+        if (GetEnumArgumentValue<SecretsRuntime>(args, "--secrets=", EnvironmentObject.GetSecretsValue()) == SecretsRuntime.Use)
         {
             configurationBuilder.AddJsonFile(
                 GetJsonFilePath(rootPath, "Root/Secrets", $"secrets.{environmentRuntime}.json"), 
